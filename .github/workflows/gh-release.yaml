@@ -51,7 +51,7 @@ jobs:
           commit_options: '--no-verify --signoff'
           file_pattern: gh-release/**
           push_options: '--force'
-          skip_fetch: true
+          skip_fetch: false
           skip_checkout: false
           create_branch: true
       - name: test
@@ -69,9 +69,9 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H gitee.com >> ~/.ssh/known_hosts
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
       - name: Push to Gitee
         run: |
           git remote set-url --push origin git@gitee.com:catlair/BiliTools.git
           GIT_BRANCH="${{ env.IS_PROD == 'true' && 'gh-release' || 'gh-release-dev' }}"
-          git checkout -B "$GIT_BRANCH"
           git push origin "$GIT_BRANCH":"$GIT_BRANCH" --force

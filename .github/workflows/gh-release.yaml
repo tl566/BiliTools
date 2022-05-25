@@ -51,7 +51,7 @@ jobs:
           commit_options: '--no-verify --signoff'
           file_pattern: gh-release/**
           push_options: '--force'
-          skip_fetch: false
+          skip_fetch: true
           skip_checkout: false
           create_branch: true
       - name: test
@@ -74,4 +74,5 @@ jobs:
         run: |
           git remote set-url --push origin git@gitee.com:catlair/BiliTools.git
           GIT_BRANCH="${{ env.IS_PROD == 'true' && 'gh-release' || 'gh-release-dev' }}"
+          git fetch --unshallow origin
           git push origin "$GIT_BRANCH":"$GIT_BRANCH" --force

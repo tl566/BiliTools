@@ -36,62 +36,13 @@ jobs:
           cat package.json | jq "del( .optionalDependencies ) | .version = \"${{ env.BILI_VERSION }}\"" > temp.json
           mv temp.json package.json
           yarn install
-      - name: Build and ZIP CFC
-        run: |
-          yarn build:baidu
-          echo ${{ env.BILI_VERSION }} >> dist/version.txt
-          cp -rf ./tools/ ./package*.json yarn.lock ./build/.yarnclean ./node_modules/ ./dist/
-          cd dist
-          npm prune --production
-          yarn autoclear
-          mv index.cfc.js cfc
-          rm -rf bin.js index*.js main.js tools package*.json yarn.lock .yarnclean
-          mv cfc index.js
-          zip -r -q ../baidu_cfc.zip .
-      - name: Build Babel
-        run: |
-          yarn build
-          echo ${{ env.BILI_VERSION }} >> dist/version.txt
-          cp config/config.single.json dist/config/config.json
-          cd dist
-          mv index.*.js ../
-          rm bin.js main.js
-          mv index.js index.local.js
-      - name: ZIP SCF
-        run: |
-          cp -rf ./tools/ ./package*.json yarn.lock ./build/.yarnclean ./node_modules/ ./dist/
-          mv ./index.scf.js ./dist/index.js
-          cd dist
-          yarn add tencentcloud-sdk-nodejs
-          npm prune --production
-          yarn autoclear
-          rm -rf tools package*.json yarn.lock .yarnclean
-          zip -r -q ../tencent_scf.zip *
-          rm -rf node_modules
-      - name: ZIP FC
-        run: |
-          cp -rf ./tools/ ./package*.json yarn.lock ./build/.yarnclean ./node_modules/ ./dist/
-          mv ./index.fc.js ./dist/index.js
-          cd dist
-          # yarn add @alicloud/fc2 # 自带 fc2
-          npm prune --production
-          yarn autoclear
-          rm -rf tools package*.json yarn.lock .yarnclean
-          zip -r -q ../aliyun_fc.zip *
       - name: Build Rollup
         run: |
           cat package.json | jq .optionalDependencies="$(cat optionalDependencies.json)" > demo.json
           mv demo.json package.json
           yarn
-          yarn build:rollup
           yarn build:vm
           cp dist/rollup gh-release -r
-      - name: ZIP huawei AGC
-        run: |
-          mkdir temp
-          cp dist/rollup/index.agc.js temp/index.js
-          cd temp
-          zip -r -q ../huawei_agc.zip index.js
       - name: Commit files
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
@@ -101,22 +52,15 @@ jobs:
           file_pattern: gh-release/**
           push_options: '--force'
           skip_fetch: true
-          skip_checkout: true
+          skip_checkout: false
           create_branch: true
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            tencent_scf.zip
-            aliyun_fc.zip
-            baidu_cfc.zip
-            huawei_agc.zip
-            gh-release/index.js
-            gh-release/cat_bili_ql.js
-          draft: ${{ env.IS_PROD == 'false' }}
-          prerelease: ${{ env.IS_PROD == 'true' && env.IS_RC == 'true' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: test
+        run: |
+          git branch
+          git log --oneline
+          ls -l
+          cd gh-release
+          ls -l
       - name: Configure Private Key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -129,4 +73,5 @@ jobs:
         run: |
           git remote set-url --push origin git@gitee.com:catlair/BiliTools.git
           GIT_BRANCH="${{ env.IS_PROD == 'true' && 'gh-release' || 'gh-release-dev' }}"
-          git push origin main:"$GIT_BRANCH" --force
+          git checkout -B "$GIT_BRANCH"
+          git push origin "$GIT_BRANCH":"$GIT_BRANCH" --force

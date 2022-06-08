@@ -1,0 +1,1 @@
+import{_ as n,d as t,Q as o,o as a,c as s,D as c,E as i,U as f}from"./app.c07b52b4.js";const _=["href"],l=t({name:"MyLink",props:{href:{type:String,required:!0}},setup(e){return(p,k)=>{const r=o("ExternalLinkIcon");return a(),s("a",{href:e.href,target:"_blank",rel:"noopener noreferrer"},[c(i(e.href),1),f(r)],8,_)}}});var d=n(l,[["__file","MyLink.vue"]]);export{d as default};
